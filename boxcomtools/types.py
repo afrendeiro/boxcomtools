@@ -3,6 +3,10 @@ import pathlib
 import os
 from typing import Generator
 
+from boxsdk.object.file import File as BoxFile
+from boxsdk.object.folder import Folder as BoxFolder
+from boxsdk import BoxClient
+
 
 class Path(pathlib.Path):
     """

@@ -7,15 +7,12 @@ from tqdm import tqdm
 import requests
 from boxsdk import (
     OAuth2,
-    Client,
     BoxAPIException,
     BoxOAuthException,
 )
-from boxsdk.object.file import File as BoxFile
-from boxsdk.object.folder import Folder as BoxFolder
 
 from boxcomtools import SECRET_FILE, APP_REDIRECT_URL
-from boxcomtools.types import Path
+from boxcomtools.types import Path, BoxFile, BoxFolder, BoxClient
 
 
 def refresh_token(write: bool = True) -> None:
@@ -40,7 +37,7 @@ def refresh_token(write: bool = True) -> None:
         return new_params
 
 
-def get_client(dev_token=None, force_reconnect=False) -> Client:
+def get_client(dev_token=None, force_reconnect=False) -> BoxClient:
     """"""
 
     print("Authenticating with box.com.")
@@ -67,7 +64,7 @@ def get_client(dev_token=None, force_reconnect=False) -> Client:
                 secret_params = json.load(open(SECRET_FILE, "r"))
 
     oauth = OAuth2(**secret_params)
-    client = Client(oauth)
+    client = BoxClient(oauth)
 
     # # Test authentication
     # resp = client.session.get("http://ip.jsontest.com/")
