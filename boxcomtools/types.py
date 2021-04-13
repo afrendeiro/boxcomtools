@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pathlib
 import os
 from typing import Generator
