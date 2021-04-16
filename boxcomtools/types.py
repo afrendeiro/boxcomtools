@@ -5,7 +5,7 @@ from typing import Generator
 
 from boxsdk.object.file import File as BoxFile
 from boxsdk.object.folder import Folder as BoxFolder
-from boxsdk import BoxClient
+from boxsdk import Client as BoxClient
 
 
 class Path(pathlib.Path):
