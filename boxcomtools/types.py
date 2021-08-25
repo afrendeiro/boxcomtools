@@ -1,7 +1,7 @@
 from __future__ import annotations
+import typing as tp
 import pathlib
 import os
-from typing import Generator
 
 from boxsdk.object.file import File as BoxFile
 from boxsdk.object.folder import Folder as BoxFolder
@@ -44,15 +44,24 @@ class Path(pathlib.Path):
     def replace_(self, patt: str, repl: str) -> Path:
         return Path(str(self).replace(patt, repl))
 
-    def iterdir(self) -> Generator:
+    def iterdir(self) -> tp.Generator:
         if self.exists():
-            return pathlib.Path(str(self)).iterdir()
-        # for x in []:  # type: ignore[var-annotated]
-        #     yield x
-        return iter([])
+            yield from [Path(x) for x in pathlib.Path(str(self)).iterdir()]
+        yield from []
 
-    def mkdir(
-        self, mode=0o777, parents: bool = True, exist_ok: bool = True
-    ) -> Path:
+    def mkdir(self, mode=0o777, parents: bool = True, exist_ok: bool = True) -> Path:
         super().mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
         return self
+
+    def glob(self, pattern: str) -> tp.Generator:
+        # to support ** with symlinks: https://bugs.python.org/issue33428
+        from glob import glob
+
+        if "**" in pattern:
+            sep = "/" if self.is_dir() else ""
+            yield from map(
+                Path,
+                glob(self.as_posix() + sep + pattern, recursive=True),
+            )
+        else:
+            yield from super().glob(pattern)

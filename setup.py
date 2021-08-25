@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 
 """
-Installer script for the ``imc`` package.
-
-Install with ``pip install .``.
+Installer script for the ``boxcomtools`` package.
 """
 
 from setuptools import setup, find_packages
@@ -30,7 +28,7 @@ setup(
     packages=find_packages(),
     use_scm_version={
         "write_to": "boxcomtools/_version.py",
-        "write_to_template": '__version__ = "{version}"\n',
+        "write_to_template": 'version = __version__ = "{version}"\n',
     },
     # entry_points={
     #     "console_scripts": [

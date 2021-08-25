@@ -1,6 +1,6 @@
+import typing as tp
 import json
 import time
-from typing import Dict
 import webbrowser
 
 from tqdm import tqdm
@@ -97,9 +97,7 @@ def new_auth():
 
     oauth = OAuth2(**secret_params)
     auth_url, csrf_token = oauth.get_authorization_url(APP_REDIRECT_URL)
-    print(
-        "Please copy the code given in the browser webpage and paste the code here."
-    )
+    print("Please copy the code given in the browser webpage and paste the code here.")
     time.sleep(2)
     webbrowser.open(auth_url)
     time.sleep(1)
@@ -110,25 +108,38 @@ def new_auth():
     json.dump(secret_params, open(SECRET_FILE, "w"), indent=4)
 
 
-def get_dir_url_checksums(root_dir: BoxFolder, json_file: Path = None) -> Dict:
+def get_dir_url_checksums(
+    root_dir: BoxFolder,
+    json_file: Path = None,
+    save_every: int = 10,
+    _cur_path: str = None,
+) -> tp.Dict:
     """
     Get a dictionary of {'file_path': {'url': 'url_value', 'sha1': 'sha1_value'}}
     recursively for all files within a directory.
     """
+    if _cur_path is None:
+        _cur_path = root_dir.get().name
     files = dict()
-    samples = sorted(list(root_dir.get_items()), key=lambda x: x.name)
-    for sample in tqdm(samples, total=len(samples)):
-        fs = list(sample.get_items())
-        for i, item in tqdm(enumerate(fs), total=len(fs)):
-            if isinstance(item, BoxFile):
-                fp = sample.name + "/tiffs/" + item.name
-                entry = dict(
-                    url=item.get_shared_link_download_url(), sha1=item.sha1
-                )
-                files[fp] = entry
-            elif isinstance(item, BoxFolder):
-                files2 = get_dir_url_checksums(item)
-                files.update(files2)
+    items = sorted(list(root_dir.get_items()), key=lambda x: x.name)
+    for i, item in tqdm(enumerate(items)):
+        if i % save_every == 0:
+            if json_file is not None:
+                existing = json.load(open(json_file, "r"))
+                files.update(existing)
+                json.dump(files, open(json_file, "w"), indent=4)
+        if isinstance(item, BoxFile):
+            fp = _cur_path + "/" + item.name
+            if fp not in files:
+                files[fp] = dict(url=item.get_shared_link_download_url(), sha1=item.sha1)
+        elif isinstance(item, BoxFolder):
+            files2 = get_dir_url_checksums(
+                item,
+                json_file,
+                save_every,
+                _cur_path=_cur_path + "/" + item.name,
+            )
+            files.update(files2)
     if json_file is not None:
         json.dump(files, open(json_file, "w"), indent=4)
     return files
